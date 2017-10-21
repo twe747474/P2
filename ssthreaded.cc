@@ -76,24 +76,19 @@ void *connectionHandler(void *socketDec)
 	int valread;
 	int sd = *(int*)socketDec;
 	cout<<"we are reading"<<sd<<endl;
-	int total_size;
     memset(buffer ,0 , 1024); 
-    if((valread = recv(sd,buffer,sizeof(buffer),0)) < 0)
-    { 
-       break;
+    if((valread = recv(sd,buffer,sizeof(buffer),0)) == -1)
+    {
+        cout<<"read failed"<<endl;
     }
-   	else
-   	{
-    total_size+=valread;
-   	}
-   	cout<<"Number of bits recieved "<<total_size<<endl;
+
     cout<<buffer<<endl;
     	
     
 	return 0;
 }
 
-int createConnection()
+int createConnection(char * port)
 {
 	    struct addrinfo hints, *res;
         //char ipstr[INET6_ADDRSTRLEN];
@@ -110,7 +105,7 @@ int createConnection()
         memset(&hints, 0, sizeof hints); // make sure the struct is empty
         hints.ai_family = AF_INET;     // don't care IPv4 or IPv6 AF_INET ANY_INADDR
         hints.ai_socktype = SOCK_STREAM;
-        if((getaddrinfo(name,"8080" , &hints, &res)) == -1 )
+        if((getaddrinfo(name,port, &hints, &res)) == -1 )
         {         
             printf("Oh dear, something went wrong with status()! %s\n", strerror(errno));
             return 1;
@@ -151,13 +146,30 @@ int createConnection()
         cout<<"Waiting for connection "<<endl;
         return 0;
 }
-
-
-
-int main()
+void wget(string url)
 {
-	signal(SIGINT, signalHandler);  
-	createConnection();
+    int loc = url.find_last_of(".");
+    string fileEnding = url.substr(loc,sizeof(url));  
+    string command = "wget " +url +" -O foundFile" +fileEnding;
+    system(command.c_str()); 
+
+}
+
+
+int main(int argc, char *argv[])
+{
+	
+    if(argc == 3 && strcmp(argv[2] , "-p"))
+    {
+    createConnection(argv[2]);
+
+    }
+    else
+    {   
+        cout<<"Please provide a port number"
+        <<"Example  ./a.out -p 8080"<<endl;
+        return 0;
+    }
 
 
 
